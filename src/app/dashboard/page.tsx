@@ -1,0 +1,18 @@
+"use client";
+
+import { signout } from "../actions/auth";
+
+export default function page() {
+  return (
+    <div>
+      <p>My dashboard</p>
+      <button
+      // onClick={() => {
+      //   signout();
+      // }}
+      >
+        Sign out
+      </button>
+    </div>
+  );
+}
