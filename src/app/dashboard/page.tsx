@@ -7,9 +7,9 @@ export default function page() {
     <div>
       <p>My dashboard</p>
       <button
-      // onClick={() => {
-      //   signout();
-      // }}
+        onClick={() => {
+          signout();
+        }}
       >
         Sign out
       </button>
