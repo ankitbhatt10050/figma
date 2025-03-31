@@ -6,11 +6,11 @@ import { colorToCss } from "~/utils";
 export default function Text({
   id,
   layer,
-  //   onPointerDown,
+  onPointerDown,
 }: {
   id: string;
   layer: TextLayer;
-  //   onPointerDown: (e: React.PointerEvent, layerId: string) => void;
+  onPointerDown: (e: React.PointerEvent, layerId: string) => void;
 }) {
   const {
     x,
@@ -91,7 +91,7 @@ export default function Text({
       ) : (
         <>
           <text
-            // onPointerDown={(e) => onPointerDown(e, id)}
+            onPointerDown={(e) => onPointerDown(e, id)}
             x={x}
             y={y + fontSize}
             fontSize={fontSize}
