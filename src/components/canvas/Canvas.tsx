@@ -10,6 +10,7 @@ import {
   colorToCss,
   penPointsToPathLayer,
   pointerEventToCanvasPoint,
+  resizeBounds,
 } from "~/utils";
 import LayerComponent from "./LayerComponent";
 import {
@@ -22,6 +23,8 @@ import {
   type CanvasState,
   CanvasMode,
   type TextLayer,
+  Side,
+  type XYWH,
 } from "~/types";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
@@ -65,6 +68,17 @@ export default function Canvas() {
       }
     },
     [canvasState.mode],
+  );
+
+  const onResizeHandlePointerDown = useCallback(
+    (corner: Side, initialBounds: XYWH) => {
+      setState({
+        mode: CanvasMode.Resizing,
+        initialBounds,
+        corner,
+      });
+    },
+    [],
   );
 
   const insertLayer = useMutation(
@@ -163,6 +177,31 @@ export default function Canvas() {
     setState({ mode: CanvasMode.Pencil });
   }, []);
 
+  const resizeSelectedLayer = useMutation(
+    ({ storage, self }, point: Point) => {
+      if (canvasState.mode !== CanvasMode.Resizing) {
+        return;
+      }
+
+      const bounds = resizeBounds(
+        canvasState.initialBounds,
+        canvasState.corner,
+        point,
+      );
+
+      // update layer to set new width and height
+
+      const liveLayers = storage.get("layers");
+      if (self.presence.selection.length > 0) {
+        const layer = liveLayers.get(self.presence.selection[0]!);
+        if (layer) {
+          layer.update(bounds);
+        }
+      }
+    },
+    [canvasState],
+  );
+
   const startDrawing = useMutation(
     ({ setMyPresence }, point: Point, pressure: number) => {
       setMyPresence({
@@ -236,9 +275,11 @@ export default function Canvas() {
         }));
       } else if (canvasState.mode === CanvasMode.Pencil) {
         continueDrawing(point, e);
+      } else if (canvasState.mode === CanvasMode.Resizing) {
+        resizeSelectedLayer(point);
       }
     },
-    [canvasState, setState, insertLayer, continueDrawing],
+    [canvasState, setState, insertLayer, continueDrawing, resizeSelectedLayer],
   );
 
   const onPointerUp = useMutation(
@@ -288,7 +329,9 @@ export default function Canvas() {
                 />
               ))}
 
-              <SelectioBox />
+              <SelectioBox
+                onResizeHandlePointerDown={onResizeHandlePointerDown}
+              />
 
               {pencilDraft !== null && pencilDraft.length > 0 && (
                 <Path
