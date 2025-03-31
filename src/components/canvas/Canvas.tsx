@@ -16,6 +16,7 @@ import {
   type EllipseLayer,
   type CanvasState,
   CanvasMode,
+  type TextLayer,
 } from "~/types";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
@@ -71,6 +72,21 @@ export default function Canvas() {
           y: position.y,
           height: 100,
           width: 100,
+          fill: { r: 217, g: 217, b: 217 },
+          stroke: { r: 217, g: 217, b: 217 },
+          opacity: 100,
+        });
+      } else if (layerType === LayerType.Text) {
+        layer = new LiveObject<TextLayer>({
+          type: LayerType.Text,
+          x: position.x,
+          y: position.y,
+          text: "Text",
+          height: 100,
+          width: 100,
+          fontSize: 16,
+          fontFamily: "Inter",
+          fontWeight: 400,
           fill: { r: 217, g: 217, b: 217 },
           stroke: { r: 217, g: 217, b: 217 },
           opacity: 100,

@@ -5,6 +5,7 @@ import Rectangle from "./Rectangle";
 import Ellipse from "./Ellipse";
 import Path from "./Path";
 import { colorToCss } from "~/utils";
+import Text from "./Text";
 
 const LayerComponent = memo(({ id }: { id: string }) => {
   const layer = useStorage((root) => root.layers.get(id));
@@ -29,6 +30,9 @@ const LayerComponent = memo(({ id }: { id: string }) => {
           opacity={layer.opacity}
         />
       );
+
+    case LayerType.Text:
+      return <Text id={id} layer={layer} />;
     default:
       return null;
   }
