@@ -1,6 +1,9 @@
 "use client";
 
 import {
+  useCanRedo,
+  useCanUndo,
+  useHistory,
   useMutation,
   useMyPresence,
   useSelf,
@@ -45,6 +48,10 @@ export default function Canvas() {
 
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
 
+  const history = useHistory();
+  const canUndo = useCanUndo();
+  const canRedo = useCanRedo();
+
   const [canvasState, setState] = useState<CanvasState>({
     mode: CanvasMode.None,
   });
@@ -58,31 +65,38 @@ export default function Canvas() {
         return;
       }
 
+      history.pause();
       e.stopPropagation();
 
       // if id not selected than add
       if (!self.presence.selection.includes(layerId)) {
-        setMyPresence({
-          selection: [layerId],
-        });
+        setMyPresence(
+          {
+            selection: [layerId],
+          },
+          {
+            addToHistory: true,
+          },
+        );
       }
 
       const point = pointerEventToCanvasPoint(e, camera);
 
       setState({ mode: CanvasMode.Translating, current: point });
     },
-    [canvasState.mode, camera],
+    [canvasState.mode, camera, history],
   );
 
   const onResizeHandlePointerDown = useCallback(
     (corner: Side, initialBounds: XYWH) => {
+      history.pause();
       setState({
         mode: CanvasMode.Resizing,
         initialBounds,
         corner,
       });
     },
-    [],
+    [history],
   );
 
   const insertLayer = useMutation(
@@ -236,7 +250,7 @@ export default function Canvas() {
 
   const unselectLayers = useMutation(({ self, setMyPresence }) => {
     if (self.presence.selection.length > 0) {
-      setMyPresence({ selection: [] });
+      setMyPresence({ selection: [] }, { addToHistory: true });
     }
   }, []);
 
@@ -339,8 +353,10 @@ export default function Canvas() {
       } else {
         setState({ mode: CanvasMode.None });
       }
+
+      history.resume();
     },
-    [canvasState, setState, insertLayer, unselectLayers],
+    [canvasState, setState, insertLayer, unselectLayers, history],
   );
 
   return (
@@ -401,6 +417,10 @@ export default function Canvas() {
         }}
         canZoomIn={camera.zoom < 2}
         canZoomOut={camera.zoom > 0.5}
+        redo={() => history.redo()}
+        undo={() => history.undo()}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
     </div>
   );
