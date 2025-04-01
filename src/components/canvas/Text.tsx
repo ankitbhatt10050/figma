@@ -90,6 +90,18 @@ export default function Text({
         </foreignObject>
       ) : (
         <>
+          <rect
+            style={{
+              transform: `translate(${x}px,${y}px)`,
+            }}
+            width={width}
+            height={height}
+            fill="none"
+            stroke="#0b99ff"
+            strokeWidth="2"
+            className="pointer-events-none opacity-0 group-hover:opacity-100"
+          />
+
           <text
             onPointerDown={(e) => onPointerDown(e, id)}
             x={x}

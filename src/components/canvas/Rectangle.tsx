@@ -14,7 +14,21 @@ export default function Rectangle({
     layer;
 
   return (
-    <g>
+    <g className="group">
+      {/* Hover border */}
+      <rect
+        style={{
+          transform: `translate(${x}px,${y}px)`,
+        }}
+        className="pointer-events-none opacity-0 group-hover:opacity-100"
+        width={width}
+        height={height}
+        fill="none"
+        stroke="#0b99ff"
+        strokeWidth="4"
+      />
+
+      {/* Main rectangle */}
       <rect
         onPointerDown={(e) => onPointerDown(e, id)}
         style={{
