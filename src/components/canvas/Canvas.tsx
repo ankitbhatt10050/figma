@@ -310,7 +310,7 @@ export default function Canvas() {
         setMyPresence({ selection: ids });
       }
     },
-    [],
+    [layerIds],
   );
 
   const onWheel = useCallback((e: React.WheelEvent) => {
@@ -372,11 +372,11 @@ export default function Canvas() {
     [
       camera,
       canvasState,
-      setState,
-      insertLayer,
       continueDrawing,
+      translateSelectedLayers,
       resizeSelectedLayer,
       startMultiSelection,
+      updateSelectionNet,
     ],
   );
 
