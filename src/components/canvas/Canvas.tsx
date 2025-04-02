@@ -11,6 +11,7 @@ import {
 } from "@liveblocks/react";
 import {
   colorToCss,
+  findIntersectionLayersWithRectangle,
   penPointsToPathLayer,
   pointerEventToCanvasPoint,
   resizeBounds,
@@ -283,6 +284,35 @@ export default function Canvas() {
     [canvasState.mode],
   );
 
+  const startMultiSelection = useCallback((current: Point, origin: Point) => {
+    if (Math.abs(current.x - origin.x) + Math.abs(current.y - origin.y) > 5) {
+      setState({ mode: CanvasMode.SelectionNet, origin, current });
+    }
+  }, []);
+
+  const updateSelectionNet = useMutation(
+    ({ storage, setMyPresence }, current: Point, origin: Point) => {
+      if (layerIds) {
+        const layers = storage.get("layers").toImmutable();
+        setState({
+          mode: CanvasMode.SelectionNet,
+          origin,
+          current,
+        });
+
+        const ids = findIntersectionLayersWithRectangle(
+          layerIds,
+          layers,
+          origin,
+          current,
+        );
+
+        setMyPresence({ selection: ids });
+      }
+    },
+    [],
+  );
+
   const onWheel = useCallback((e: React.WheelEvent) => {
     setCamera((camera) => ({
       x: camera.x - e.deltaX,
@@ -305,6 +335,8 @@ export default function Canvas() {
         startDrawing(point, e.pressure);
         return;
       }
+
+      setState({ origin: point, mode: CanvasMode.Pressing });
     },
     [canvasState, canvasState.mode, setState, startDrawing],
   );
@@ -313,7 +345,11 @@ export default function Canvas() {
     ({}, e: React.PointerEvent) => {
       const point = pointerEventToCanvasPoint(e, camera);
 
-      if (
+      if (canvasState.mode === CanvasMode.Pressing) {
+        startMultiSelection(point, canvasState.origin);
+      } else if (canvasState.mode === CanvasMode.SelectionNet) {
+        updateSelectionNet(point, canvasState.origin);
+      } else if (
         canvasState.mode === CanvasMode.Dragging &&
         canvasState.origin !== null
       ) {
@@ -333,7 +369,15 @@ export default function Canvas() {
         resizeSelectedLayer(point);
       }
     },
-    [canvasState, setState, insertLayer, continueDrawing, resizeSelectedLayer],
+    [
+      camera,
+      canvasState,
+      setState,
+      insertLayer,
+      continueDrawing,
+      resizeSelectedLayer,
+      startMultiSelection,
+    ],
   );
 
   const onPointerUp = useMutation(
@@ -341,7 +385,10 @@ export default function Canvas() {
       const point = pointerEventToCanvasPoint(e, camera);
       // insertLayer(LayerType.Ellipse, point);
 
-      if (canvasState.mode === CanvasMode.None) {
+      if (
+        canvasState.mode === CanvasMode.None ||
+        canvasState.mode === CanvasMode.Pressing
+      ) {
         setState({ mode: CanvasMode.None });
         unselectLayers();
       } else if (canvasState.mode === CanvasMode.Inserting) {
@@ -391,6 +438,21 @@ export default function Canvas() {
               <SelectioBox
                 onResizeHandlePointerDown={onResizeHandlePointerDown}
               />
+
+              {canvasState.mode === CanvasMode.SelectionNet &&
+                canvasState.current != null && (
+                  <rect
+                    className="fill-blue-600/5 stroke-blue-600 stroke-[0.5]"
+                    x={Math.min(canvasState.origin.x, canvasState.current.x)}
+                    y={Math.min(canvasState.origin.y, canvasState.current.y)}
+                    width={Math.abs(
+                      canvasState.origin.x - canvasState.current.x,
+                    )}
+                    height={Math.abs(
+                      canvasState.origin.y - canvasState.current.y,
+                    )}
+                  />
+                )}
 
               {pencilDraft !== null && pencilDraft.length > 0 && (
                 <Path
