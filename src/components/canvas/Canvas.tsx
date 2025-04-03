@@ -36,6 +36,7 @@ import { useCallback, useEffect, useState } from "react";
 import Toolsbar from "../toolsbar/ToolsBar";
 import Path from "./Path";
 import SelectioBox from "./SelectioBox";
+import useDeleteLayers from "~/hooks/useDeleteLayers";
 
 const MAX_LAYERS = 100;
 
@@ -44,6 +45,8 @@ export default function Canvas() {
 
   const layerIds = useStorage((root) => root.layerIds);
   const pencilDraft = useSelf((me) => me.presence.pencilDraft);
+
+  const deleteLayers = useDeleteLayers();
 
   const presence = useMyPresence();
 
@@ -56,6 +59,55 @@ export default function Canvas() {
   const [canvasState, setState] = useState<CanvasState>({
     mode: CanvasMode.None,
   });
+
+  const selectAllLayers = useMutation(
+    ({ setMyPresence }) => {
+      if (layerIds) {
+        setMyPresence({ selection: [...layerIds] }, { addToHistory: true });
+      }
+    },
+    [layerIds],
+  );
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const activeElement = document.activeElement;
+      const isInputField =
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA");
+
+      if (isInputField) {
+        return;
+      }
+
+      switch (e.key) {
+        case "Backspace":
+          deleteLayers();
+          break;
+        case "z":
+          if (e.ctrlKey || e.metaKey) {
+            if (e.shiftKey) {
+              history.redo();
+            } else {
+              history.undo();
+            }
+          }
+          break;
+        case "a":
+          if (e.ctrlKey || e.metaKey) {
+            selectAllLayers();
+          }
+          break;
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [deleteLayers]);
 
   const onLayerPointerDown = useMutation(
     ({ self, setMyPresence }, e: React.PointerEvent, layerId: string) => {
@@ -328,6 +380,10 @@ export default function Canvas() {
 
       if (canvasState.mode === CanvasMode.Dragging) {
         setState({ mode: CanvasMode.Dragging, origin: point });
+        return;
+      }
+
+      if (canvasState.mode === CanvasMode.Inserting) {
         return;
       }
 
