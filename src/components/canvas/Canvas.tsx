@@ -38,10 +38,13 @@ import Path from "./Path";
 import SelectioBox from "./SelectioBox";
 import useDeleteLayers from "~/hooks/useDeleteLayers";
 import SelectionTools from "./SelectionTools";
+import Sidebars from "../sidebars/Sidebars";
 
 const MAX_LAYERS = 100;
 
 export default function Canvas() {
+  const [leftIsMinimized, setLeftIsMinimized] = useState(false);
+
   const roomColor = useStorage((root) => root.roomColor);
 
   const layerIds = useStorage((root) => root.layerIds);
@@ -551,6 +554,11 @@ export default function Canvas() {
         undo={() => history.undo()}
         canUndo={canUndo}
         canRedo={canRedo}
+      />
+
+      <Sidebars
+        leftIsMinimized={leftIsMinimized}
+        setLeftIsMinimized={setLeftIsMinimized}
       />
     </div>
   );
