@@ -35,10 +35,10 @@ export default async function Page() {
         </div>
         <div className="flex h-full flex-col gap-10 p-8">
           <CreateRoom />
-          {/* <RoomsView
+          <RoomsView
             ownedRooms={user.ownedRooms}
             roomInvites={user.roomInvites.map((x) => x.room)}
-          /> */}
+          />
         </div>
       </div>
     </div>
