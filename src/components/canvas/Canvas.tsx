@@ -509,7 +509,7 @@ export default function Canvas({
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerLeave={onPointerLeave}
-            className="h-full w-full border-2 border-solid border-red-500"
+            className="h-full w-full"
           >
             <g
               style={{
