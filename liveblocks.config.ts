@@ -11,7 +11,7 @@ declare global {
       // Example, real-time cursor coordinates
       // cursor: { x: number; y: number };
       selection: string[];
-      curson: Point | null;
+      cursor: Point | null;
       penColor: Color | null;
       pencilDraft: [x: number, y: number, pressure: number][] | null;
     };

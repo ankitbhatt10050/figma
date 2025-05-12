@@ -22,7 +22,7 @@ export function Room({
         id={roomId}
         initialPresence={{
           selection: [],
-          curson: null,
+          cursor: null,
           penColor: null,
           pencilDraft: null,
         }}
