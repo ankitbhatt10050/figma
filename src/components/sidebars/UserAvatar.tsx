@@ -4,7 +4,7 @@ const UserAvatar = ({
   className,
 }: {
   name: string;
-  color: string;
+  color?: string;
   className?: string;
 }) => {
   return (
