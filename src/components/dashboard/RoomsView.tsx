@@ -1,6 +1,6 @@
 "use client";
 
-import { type Room } from "@prisma/client";
+import type { Room } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import React, { useRef } from "react";
 import { useEffect, useMemo, useState } from "react";

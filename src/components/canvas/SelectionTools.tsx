@@ -1,5 +1,5 @@
 import useSelectionBounds from "~/hooks/useSelectionBounds";
-import { CanvasMode, type Camera } from "~/types";
+import { type Camera, CanvasMode } from "~/types";
 import { BsArrowDown, BsArrowUp } from "react-icons/bs";
 import { useMutation, useSelf } from "@liveblocks/react";
 import { memo } from "react";
@@ -64,17 +64,15 @@ function SelectionTools({
   );
 
   const selectionBounds = useSelectionBounds();
-
   if (!selectionBounds) {
     return null;
   }
 
-  const x = selectionBounds.width / 2 + selectionBounds.x;
-  const y = selectionBounds.y + camera.y;
+  const x =
+    (selectionBounds.width / 2 + selectionBounds.x) * camera.zoom + camera.x;
+  const y = selectionBounds.y * camera.zoom + camera.y;
 
-  if (canvasMode !== CanvasMode.RightClick) {
-    return null;
-  }
+  if (canvasMode !== CanvasMode.RightClick) return null;
 
   return (
     <div
@@ -90,12 +88,11 @@ function SelectionTools({
         <span className="text-xs">Bring to front</span>
         <BsArrowDown className="mr-2 h-4 w-4" />
       </button>
-
       <button
         onClick={sendToBack}
         className="flex w-full items-center justify-between rounded-md px-1 py-1 text-white hover:bg-blue-500"
       >
-        <span className="text-xs">Send to Back</span>
+        <span className="text-xs">Send to back</span>
         <BsArrowUp className="mr-2 h-4 w-4" />
       </button>
     </div>

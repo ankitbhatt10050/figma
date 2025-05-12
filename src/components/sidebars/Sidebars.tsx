@@ -15,11 +15,19 @@ import { RiRoundedCorner } from "react-icons/ri";
 import Dropdown from "./Dropdown";
 import ColorPicker from "./ColorPicker";
 import UserAvatar from "./UserAvatar";
+import type { User } from "@prisma/client";
+import ShareMenu from "./ShareMenu";
 
 export default function Sidebars({
+  roomName,
+  roomId,
+  othersWithAccessToRoom,
   leftIsMinimized,
   setLeftIsMinimized,
 }: {
+  roomName: string;
+  roomId: string;
+  othersWithAccessToRoom: User[];
   leftIsMinimized: boolean;
   setLeftIsMinimized: (value: boolean) => void;
 }) {
@@ -28,7 +36,6 @@ export default function Sidebars({
 
   const selectedLayer = useSelf((me) => {
     const selection = me.presence.selection;
-
     return selection.length === 1 ? selection[0] : null;
   });
 
@@ -40,10 +47,11 @@ export default function Sidebars({
   });
 
   const roomColor = useStorage((root) => root.roomColor);
+
   const layers = useStorage((root) => root.layers);
   const layerIds = useStorage((root) => root.layerIds);
-
   const reversedLayerIds = [...(layerIds ?? [])].reverse();
+
   const selection = useSelf((me) => me.presence.selection);
 
   const setRoomColor = useMutation(({ storage }, newColor: Color) => {
@@ -67,9 +75,7 @@ export default function Sidebars({
         fontFamily?: string;
       },
     ) => {
-      if (!selectedLayer) {
-        return;
-      }
+      if (!selectedLayer) return;
 
       const liveLayers = storage.get("layers");
       const layer = liveLayers.get(selectedLayer);
@@ -88,9 +94,7 @@ export default function Sidebars({
           ...(updates.stroke !== undefined && {
             stroke: hexToRgb(updates.stroke),
           }),
-          ...(updates.fontSize !== undefined && {
-            fontSize: updates.fontSize,
-          }),
+          ...(updates.fontSize !== undefined && { fontSize: updates.fontSize }),
           ...(updates.fontWeight !== undefined && {
             fontWeight: updates.fontWeight,
           }),
@@ -105,6 +109,7 @@ export default function Sidebars({
 
   return (
     <>
+      {/* Left Sidebar */}
       {!leftIsMinimized ? (
         <div className="fixed left-0 flex h-screen w-[240px] flex-col border-r border-gray-200 bg-white">
           <div className="p-4">
@@ -112,38 +117,36 @@ export default function Sidebars({
               <Link href="/dashboard">
                 <img
                   src="/figma-logo.svg"
-                  alt="logo"
-                  className="h-[18px] w-[18px]"
+                  alt="Figma logo"
+                  className="h-[18px w-[18px]"
                 />
               </Link>
               <PiSidebarSimpleThin
-                className="h-5 w-5 cursor-pointer"
                 onClick={() => setLeftIsMinimized(true)}
+                className="h-5 w-5 cursor-pointer"
               />
             </div>
             <h2 className="mt-2 scroll-m-20 text-[13px] font-medium">
-              RoomName
+              {roomName}
             </h2>
           </div>
           <div className="border-b border-gray-200" />
           <div className="flex flex-col gap-1 p-4">
             <span className="mb-2 text-[11px] font-medium">Layers</span>
-
             {layerIds &&
               reversedLayerIds.map((id) => {
                 const layer = layers?.get(id);
                 const isSelected = selection?.includes(id);
-
                 if (layer?.type === LayerType.Rectangle) {
                   return (
                     <LayerButton
                       key={id}
                       layerId={id}
+                      text="Rectangle"
+                      isSelected={isSelected ?? false}
                       icon={
                         <IoSquareOutline className="h-3 w-3 text-gray-500" />
                       }
-                      isSelected={isSelected ?? false}
-                      text="Rectangle"
                     />
                   );
                 } else if (layer?.type === LayerType.Ellipse) {
@@ -151,11 +154,11 @@ export default function Sidebars({
                     <LayerButton
                       key={id}
                       layerId={id}
+                      text="Ellipse"
+                      isSelected={isSelected ?? false}
                       icon={
                         <IoEllipseOutline className="h-3 w-3 text-gray-500" />
                       }
-                      isSelected={isSelected ?? false}
-                      text="Ellipse"
                     />
                   );
                 } else if (layer?.type === LayerType.Path) {
@@ -163,9 +166,9 @@ export default function Sidebars({
                     <LayerButton
                       key={id}
                       layerId={id}
-                      icon={<PiPathLight className="h-3 w-3 text-gray-500" />}
-                      isSelected={isSelected ?? false}
                       text="Drawing"
+                      isSelected={isSelected ?? false}
+                      icon={<PiPathLight className="h-3 w-3 text-gray-500" />}
                     />
                   );
                 } else if (layer?.type === LayerType.Text) {
@@ -173,11 +176,11 @@ export default function Sidebars({
                     <LayerButton
                       key={id}
                       layerId={id}
+                      text="Text"
+                      isSelected={isSelected ?? false}
                       icon={
                         <AiOutlineFontSize className="h-3 w-3 text-gray-500" />
                       }
-                      isSelected={isSelected ?? false}
-                      text="Text"
                     />
                   );
                 }
@@ -189,19 +192,19 @@ export default function Sidebars({
           <Link href="/dashboard">
             <img
               src="/figma-logo.svg"
-              alt="logo"
-              className="h-[18px] w-[18px]"
+              alt="Figma logo"
+              className="h-[18px w-[18px]"
             />
           </Link>
-          <h2 className="scroll-m-20 text-[13px] font-medium">RoomName</h2>
+          <h2 className="scroll-m-20 text-[13px] font-medium">{roomName}</h2>
           <PiSidebarSimpleThin
-            className="h-5 w-5 cursor-pointer"
             onClick={() => setLeftIsMinimized(false)}
+            className="h-5 w-5 cursor-pointer"
           />
         </div>
       )}
 
-      {/* Right side bar */}
+      {/* Right Sidebar */}
       {!leftIsMinimized || layer ? (
         <div
           className={`fixed ${leftIsMinimized && layer ? "top-3 right-3 bottom-3 rounded-xl" : ""} ${!leftIsMinimized && !layer ? "h-screen" : ""} ${!leftIsMinimized && layer ? "top-0 bottom-0 h-screen" : ""} right-0 flex w-[240px] flex-col border-l border-gray-200 bg-white`}
@@ -222,10 +225,10 @@ export default function Sidebars({
                 />
               ))}
             </div>
-            {/* <ShareMenu
+            <ShareMenu
               roomId={roomId}
               othersWithAccessToRoom={othersWithAccessToRoom}
-            /> */}
+            />
           </div>
           <div className="border-b border-gray-200"></div>
           {layer ? (
@@ -434,10 +437,10 @@ export default function Sidebars({
               />
             ))}
           </div>
-          {/* <ShareMenu
+          <ShareMenu
             roomId={roomId}
             othersWithAccessToRoom={othersWithAccessToRoom}
-          /> */}
+          />
         </div>
       )}
     </>
